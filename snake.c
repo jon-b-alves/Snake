@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 /*
  * TODO
@@ -13,17 +14,15 @@
 
 int main(void) {
     initscr();
-    int i = 0;
-
-    while (1) {
-        clear();
-        mvaddstr(i, 0, "rain");
-        refresh();
-        int ch = getch();
-        if (ch == 'q') break;
-        else i++;
-    }
-
+    int height = 30;
+    int width = 60;
+    int start_y = (LINES - height) / 2;
+    int start_x = (COLS - width) / 2;
+    WINDOW *win = newwin(height, width, start_y, start_x);
+    box(win, 0, 0);
+    wrefresh(win);
+    wgetch(win);
+    delwin(win);
     endwin();
     return 0;
 }
