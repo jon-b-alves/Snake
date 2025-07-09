@@ -4,44 +4,49 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define WIN_HEIGHT 30
+#define WIN_WIDTH 60
 /*
  * TODO
- * - Create border in which snake confines
- * - Create object which randomly generates as points
  * - Create snake and its movements
  * - snake grows when capturing object
  * - if snake touches border, game over
  * - if snake touches itself, game over
 */
+struct Pos {
+    int y_axis;
+    int x_axis;
+};
 
-int generate_rand_y() {
-    const int min_y = 1;
-    const int max_y = 28;
-    int random_y = (rand() % (max_y - min_y + 1)) + min_y;
-    return random_y;
+struct Pos generate_random_food_position() {
+    struct Pos food_position;
+    food_position.y_axis = (rand() % (WIN_HEIGHT - 2)) + 1;
+    food_position.x_axis = (rand() % (WIN_WIDTH - 2)) + 1;
+    return food_position;
 }
 
-int generate_rand_x() {
-    const int min_x = 1;
-    const int max_x = 58;
-    int random_x = (rand() % (max_x - min_x + 1)) + min_x;
-    return random_x;
-}
+//snake
+struct Pos head = {1, 30};
+struct Pos segments[100];
+struct Pos dir = {-1, 0};
+
+//food
+struct Pos food;
 
 int main(void) {
     srand(time(NULL));
     initscr();
-    const int height = 30;
-    const int width = 60;
-    const int start_y = (LINES - height) / 2;
-    const int start_x = (COLS - width) / 2;
-    WINDOW *win = newwin(height, width, start_y, start_x);
+
+    const int start_y = (LINES - WIN_HEIGHT) / 2;
+    const int start_x = (COLS - WIN_WIDTH) / 2;
+    WINDOW *win = newwin(WIN_HEIGHT, WIN_WIDTH, start_y, start_x);
     box(win, ACS_VLINE, ACS_HLINE);
-    //mvwaddch(win, 29, 59, 'O');
-    int y = generate_rand_y();
-    int x = generate_rand_x();
-    printf("%d\n%d\n", y, x);
-    mvwaddch(win, y, x, 'O');
+
+    food = generate_random_food_position();
+    mvwaddch(win, food.y_axis, food.x_axis, '@');
+
+    mvwaddch(win, head.y_axis, head.x_axis, 'O');
+
     wrefresh(win);
     wgetch(win);
     delwin(win);
