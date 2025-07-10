@@ -6,6 +6,7 @@
 
 #define WIN_HEIGHT 30
 #define WIN_WIDTH 60
+#define SNAKE_MAX_LENGTH 100
 /*
  * TODO
  * - Create snake and its movements
@@ -18,6 +19,17 @@ struct Pos {
     int x_axis;
 };
 
+//window
+WINDOW *win;
+
+//snake
+struct Pos head = {1, 30}; //starting position
+struct Pos segments[SNAKE_MAX_LENGTH];
+struct Pos dir = {-1, 0}; //starting direction (down)
+
+//food
+struct Pos food;
+
 struct Pos generate_random_food_position() {
     struct Pos food_position;
     food_position.y_axis = (rand() % (WIN_HEIGHT - 2)) + 1;
@@ -25,13 +37,37 @@ struct Pos generate_random_food_position() {
     return food_position;
 }
 
-//snake
-struct Pos head = {1, 30};
-struct Pos segments[100];
-struct Pos dir = {-1, 0};
+void process_input() {
+    int key = wgetch(win);
+    
+    switch (key) {
+        case KEY_UP:
+            dir.y_axis = -1;
+            dir.x_axis = 0;
+            break;
 
-//food
-struct Pos food;
+        case KEY_DOWN:
+            dir.y_axis = 1;
+            dir.x_axis = -0;
+            break;
+
+
+        case KEY_LEFT:
+            dir.y_axis = 0;
+            dir.x_axis - -1;
+            break;
+
+        case KEY_RIGHT:
+            dir.y_axis = 0;
+            dir.x_axis = 1;
+            break;
+    } 
+}
+
+void update_snake() {
+    head.y_axis += dir.y_axis;
+    head.x_axis += dir.x_axis;
+}
 
 int main(void) {
     srand(time(NULL));
@@ -39,8 +75,12 @@ int main(void) {
 
     const int start_y = (LINES - WIN_HEIGHT) / 2;
     const int start_x = (COLS - WIN_WIDTH) / 2;
-    WINDOW *win = newwin(WIN_HEIGHT, WIN_WIDTH, start_y, start_x);
+    win = newwin(WIN_HEIGHT, WIN_WIDTH, start_y, start_x);
+    keypad(win, TRUE);
     box(win, ACS_VLINE, ACS_HLINE);
+    
+    process_input(win);
+    update_snake();
 
     food = generate_random_food_position();
     mvwaddch(win, food.y_axis, food.x_axis, '@');
