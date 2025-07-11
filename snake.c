@@ -24,17 +24,51 @@ WINDOW *win;
 
 //snake
 struct Pos head = {1, 30}; //starting position
+struct Pos old_head = {1, 30};
 struct Pos segments[SNAKE_MAX_LENGTH];
-struct Pos dir = {-1, 0}; //starting direction (down)
+struct Pos dir = {1, 0}; //starting direction (down)
 
 //food
 struct Pos food;
 
-struct Pos generate_random_food_position() {
-    struct Pos food_position;
-    food_position.y_axis = (rand() % (WIN_HEIGHT - 2)) + 1;
-    food_position.x_axis = (rand() % (WIN_WIDTH - 2)) + 1;
-    return food_position;
+void update_food() {
+    food.y_axis = (rand() % (WIN_HEIGHT - 2)) + 1;
+    food.x_axis = (rand() % (WIN_WIDTH - 2)) + 1;
+    mvwaddch(win, food.y_axis, food.x_axis, '@');
+}
+
+void update_snake() {
+    //deletes the old position of the head in the next frame by replacing it with a blank character
+    mvwaddch(win,old_head.y_axis, old_head.x_axis, ' ');
+
+    head.y_axis += dir.y_axis;
+    head.x_axis += dir.x_axis;
+    mvwaddch(win, head.y_axis, head.x_axis, 'O');
+
+    old_head = head;
+}
+
+void init() {
+    srand(time(NULL));
+    initscr();
+
+    const int start_y = (LINES - WIN_HEIGHT) / 2;
+    const int start_x = (COLS - WIN_WIDTH) / 2;
+    win = newwin(WIN_HEIGHT, WIN_WIDTH, start_y, start_x);
+
+    box(win, ACS_VLINE, ACS_HLINE);
+    
+    keypad(win, TRUE);
+    nodelay(win, TRUE);
+    curs_set(0);
+    noecho();
+
+}
+
+int quit_game() {
+    delwin(win);
+    endwin();
+    return 0;
 }
 
 void process_input() {
@@ -54,42 +88,30 @@ void process_input() {
 
         case KEY_LEFT:
             dir.y_axis = 0;
-            dir.x_axis - -1;
+            dir.x_axis = -1;
             break;
 
         case KEY_RIGHT:
             dir.y_axis = 0;
             dir.x_axis = 1;
             break;
+
+        case 'q':
+            quit_game();
     } 
 }
 
-void update_snake() {
-    head.y_axis += dir.y_axis;
-    head.x_axis += dir.x_axis;
-}
-
 int main(void) {
-    srand(time(NULL));
-    initscr();
+    init();
+    update_food();
 
-    const int start_y = (LINES - WIN_HEIGHT) / 2;
-    const int start_x = (COLS - WIN_WIDTH) / 2;
-    win = newwin(WIN_HEIGHT, WIN_WIDTH, start_y, start_x);
-    keypad(win, TRUE);
-    box(win, ACS_VLINE, ACS_HLINE);
-    
-    process_input(win);
-    update_snake();
+    while (true) {
+        process_input();
+        update_snake();
+        wrefresh(win);
+        napms(100);
+    }
 
-    food = generate_random_food_position();
-    mvwaddch(win, food.y_axis, food.x_axis, '@');
-
-    mvwaddch(win, head.y_axis, head.x_axis, 'O');
-
-    wrefresh(win);
-    wgetch(win);
-    delwin(win);
-    endwin();
+    quit_game();
     return 0;
 }
