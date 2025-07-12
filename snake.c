@@ -63,12 +63,14 @@ void init() {
     curs_set(0);
     noecho();
 
+    update_food();
+
 }
 
 int quit_game() {
     delwin(win);
     endwin();
-    return 0;
+    exit(0);
 }
 
 void process_input() {
@@ -101,13 +103,24 @@ void process_input() {
     } 
 }
 
+void check_collision() {
+    if (head.y_axis == food.y_axis && head.x_axis == food.x_axis) {
+        update_food();
+    }
+    
+    if (head.y_axis >= WIN_HEIGHT - 1 || head.y_axis <= 0 || head.x_axis >= WIN_WIDTH - 1 || head.x_axis <= 0) {
+        quit_game();
+    }
+}
+
 int main(void) {
     init();
-    update_food();
 
     while (true) {
         process_input();
         update_snake();
+        check_collision();
+
         wrefresh(win);
         napms(100);
     }
