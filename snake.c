@@ -7,6 +7,7 @@
 #define WIN_HEIGHT 30
 #define WIN_WIDTH 60
 #define SNAKE_MAX_LENGTH 100
+#define NO_KEY_PRESS -1
 /*
  * TODO
  * - Create snake and its movements
@@ -74,7 +75,13 @@ int quit_game() {
 }
 
 void process_input() {
-    int key = wgetch(win);
+    int input;
+    int key = NO_KEY_PRESS;
+
+    // if no key is pressed, wgetch returns ERR 
+    while ((input = wgetch(win)) != ERR) {
+        key = input;
+    }
     
     switch (key) {
         case KEY_UP:
