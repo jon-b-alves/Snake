@@ -4,16 +4,15 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define WIN_HEIGHT 30
-#define WIN_WIDTH 60
+#define WIN_HEIGHT 15
+#define WIN_WIDTH 30
 #define SNAKE_MAX_LENGTH 100
 #define NO_KEY_PRESS -1
 /*
  * TODO
- * - Create snake and its movements
- * - snake grows when capturing object
- * - if snake touches border, game over
- * - if snake touches itself, game over
+ * - add snake collision with itself
+ *   prevent opposite movements
+ * - when food updates, cant update on the snake
 */
 struct Pos {
     int y_axis;
@@ -24,8 +23,9 @@ struct Pos {
 WINDOW *win;
 
 //snake
-struct Pos head = {1, 30}; //starting position
-struct Pos old_head = {1, 30};
+struct Pos head = {1, 15}; //starting position
+struct Pos prev_tail;
+int snake_len = 1;
 struct Pos segments[SNAKE_MAX_LENGTH];
 struct Pos dir = {1, 0}; //starting direction (down)
 
@@ -39,14 +39,19 @@ void update_food() {
 }
 
 void update_snake() {
-    //deletes the old position of the head in the next frame by replacing it with a blank character
-    mvwaddch(win,old_head.y_axis, old_head.x_axis, ' ');
+    // saving prev tail location to turn that character into a blank character
+    prev_tail = segments[snake_len - 1];
 
-    head.y_axis += dir.y_axis;
-    head.x_axis += dir.x_axis;
+    for (int i = snake_len - 1; i > 0; i--) {
+        segments[i] = segments[i-1];
+    }
+    
+    segments[0].y_axis += dir.y_axis;
+    segments[0].x_axis += dir.x_axis;
+    head = segments[0];
+
+    mvwaddch(win, prev_tail.y_axis, prev_tail.x_axis, ' ');
     mvwaddch(win, head.y_axis, head.x_axis, 'O');
-
-    old_head = head;
 }
 
 void init() {
@@ -64,8 +69,8 @@ void init() {
     curs_set(0);
     noecho();
 
+    segments[0] = head;
     update_food();
-
 }
 
 int quit_game() {
@@ -113,6 +118,8 @@ void process_input() {
 void check_collision() {
     if (head.y_axis == food.y_axis && head.x_axis == food.x_axis) {
         update_food();
+        snake_len += 1;
+        segments[snake_len - 1] = prev_tail;
     }
     
     if (head.y_axis >= WIN_HEIGHT - 1 || head.y_axis <= 0 || head.x_axis >= WIN_WIDTH - 1 || head.x_axis <= 0) {
