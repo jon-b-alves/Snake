@@ -90,24 +90,32 @@ void process_input() {
     
     switch (key) {
         case KEY_UP:
-            dir.y_axis = -1;
-            dir.x_axis = 0;
+            if (dir.y_axis != 1) {
+                dir.y_axis = -1;
+                dir.x_axis = 0; 
+            }
             break;
 
         case KEY_DOWN:
-            dir.y_axis = 1;
-            dir.x_axis = -0;
+            if (dir.y_axis != -1) {
+                dir.y_axis = 1;
+                dir.x_axis = -0;
+            }
             break;
 
 
         case KEY_LEFT:
-            dir.y_axis = 0;
-            dir.x_axis = -1;
+            if (dir.x_axis != 1) {
+                dir.y_axis = 0;
+                dir.x_axis = -1;
+            }
             break;
 
         case KEY_RIGHT:
-            dir.y_axis = 0;
-            dir.x_axis = 1;
+            if (dir.x_axis != -1) {
+                dir.y_axis = 0;
+                dir.x_axis = 1;
+            }
             break;
 
         case 'q':
@@ -116,14 +124,24 @@ void process_input() {
 }
 
 void check_collision() {
+    // snake collision with food
     if (head.y_axis == food.y_axis && head.x_axis == food.x_axis) {
         update_food();
         snake_len += 1;
         segments[snake_len - 1] = prev_tail;
     }
     
+    // snake collision with border
     if (head.y_axis >= WIN_HEIGHT - 1 || head.y_axis <= 0 || head.x_axis >= WIN_WIDTH - 1 || head.x_axis <= 0) {
         quit_game();
+    }
+
+    //snake collision with itself
+    //we start at i = 1 becuase segments[0] is the head
+    for (int i = 1; i <= snake_len - 1; i++) {
+        if (head.y_axis == segments[i].y_axis && head.x_axis == segments[i].x_axis) {
+            quit_game();
+        }
     }
 }
 
