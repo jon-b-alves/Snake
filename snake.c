@@ -10,8 +10,6 @@
 #define NO_KEY_PRESS -1
 /*
  * TODO
- * - add snake collision with itself
- *   prevent opposite movements
  * - when food updates, cant update on the snake
 */
 struct Pos {
@@ -33,8 +31,20 @@ struct Pos dir = {1, 0}; //starting direction (down)
 struct Pos food;
 
 void update_food() {
-    food.y_axis = (rand() % (WIN_HEIGHT - 2)) + 1;
-    food.x_axis = (rand() % (WIN_WIDTH - 2)) + 1;
+    bool valid_position = false;
+
+    while (!valid_position) {
+        food.y_axis = (rand() % (WIN_HEIGHT - 2)) + 1;
+        food.x_axis = (rand() % (WIN_WIDTH - 2)) + 1;
+        valid_position = true;
+
+        for (int i = 0; i <= snake_len - 1; i++) {
+            if (food.y_axis == segments[i].y_axis && food.x_axis == segments[i].x_axis) {
+                valid_position = false;
+                break;
+            }
+        }
+    }
     mvwaddch(win, food.y_axis, food.x_axis, '@');
 }
 
